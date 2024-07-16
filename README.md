@@ -4,7 +4,7 @@ WIP
 
 ## To run
 
-Requires (rust)[https://www.rust-lang.org/tools/install]
+Requires [rust](https://www.rust-lang.org/tools/install)
 
 ```shell
 cargo run
