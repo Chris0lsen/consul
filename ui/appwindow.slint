@@ -1,0 +1,25 @@
+import { Button, ListView } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    in-out property <[string]> items: ["Get started"];
+    in-out property <string> input_text;
+    callback request-add-item();
+    VerticalLayout {
+        TextInput {
+           text <=> input_text;
+        }
+
+        Button {
+            text: "Add";
+            clicked => {
+                root.request-add-item();
+            }
+        }
+
+        ListView {
+            for item in items: Text {
+                text: item;
+            }
+        }
+    }
+}
