@@ -1,11 +1,15 @@
 use crate::ui::AppWindow; // Import the re-exported AppWindow type
-use crate::ui_events::UIEvent; // Import the UIEvent enum
+// use crate::ui_events::UIEvent; // Import the UIEvent enum
 use slint::Model;
 use slint::ModelRc;
 use slint::SharedString;
 use slint::VecModel;
 use slint::ComponentHandle;
 use std::rc::Rc;
+pub enum UIEvent {
+    AddItem(SharedString),
+    // Add more events here as needed
+}
 
 pub fn init(ui: &AppWindow) {
     let items_model: Rc<VecModel<SharedString>> =
