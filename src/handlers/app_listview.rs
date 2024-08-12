@@ -6,6 +6,7 @@ use slint::SharedString;
 use slint::VecModel;
 use slint::ComponentHandle;
 use std::rc::Rc;
+
 pub enum AppListviewEvent {
     AddItem(SharedString),
     // Add more events here as needed
