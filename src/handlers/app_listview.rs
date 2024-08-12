@@ -6,7 +6,7 @@ use slint::SharedString;
 use slint::VecModel;
 use slint::ComponentHandle;
 use std::rc::Rc;
-pub enum UIEvent {
+pub enum AppListviewEvent {
     AddItem(SharedString),
     // Add more events here as needed
 }
@@ -20,14 +20,14 @@ pub fn init(ui: &AppWindow) {
     ui.on_request_add_item(move || {
         let app = ui_weak.unwrap();
         let input_text = app.get_input_text();
-        app.handle_event(UIEvent::AddItem(input_text));
+        app.handle_event(AppListviewEvent::AddItem(input_text));
     });
 }
 
 impl AppWindow {
-    pub fn handle_event(&self, event: UIEvent) {
+    pub fn handle_event(&self, event: AppListviewEvent) {
         match event {
-            UIEvent::AddItem(text) => {
+            AppListviewEvent::AddItem(text) => {
                 let items_model_rc = self.get_items();
                 let items_model = items_model_rc
                     .as_any()
