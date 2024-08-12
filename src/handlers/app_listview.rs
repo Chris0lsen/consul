@@ -29,17 +29,21 @@ impl AppWindow {
     pub fn handle_event(&self, event: AppListviewEvent) {
         match event {
             AppListviewEvent::AddItem(text) => {
-                let items_model_rc = self.get_items();
-                let items_model = items_model_rc
-                    .as_any()
-                    .downcast_ref::<VecModel<SharedString>>()
-                    .expect("We know we set a VecModel earlier");
-                if !text.is_empty() {
-                    items_model.push(SharedString::from(text));
-                    self.set_input_text(SharedString::new());
-                }
+               handle_add_item(&self, text)
             }
             // Add more event handling here as needed
         }
+    }
+}
+
+fn handle_add_item(app: &AppWindow, text: SharedString) {
+    let items_model_rc = app.get_items();
+    let items_model = items_model_rc
+        .as_any()
+        .downcast_ref::<VecModel<SharedString>>()
+        .expect("We know we set a VecModel earlier");
+    if !text.is_empty() {
+        items_model.push(SharedString::from(text));
+        app.set_input_text(SharedString::new());
     }
 }
