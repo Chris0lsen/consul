@@ -1,8 +1,8 @@
 mod handlers;
-mod ui;
+mod ui_modules;
 use slint::ComponentHandle;
 
-use crate::ui::AppWindow; // Use the re-exported AppWindow type
+use crate::ui_modules::AppWindow; // Use the re-exported AppWindow type
 use crate::handlers::app_listview;
 
 fn main() -> Result<(), slint::PlatformError> {
