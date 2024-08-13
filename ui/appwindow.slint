@@ -1,35 +1,27 @@
 import { Button, ListView, CheckBox } from "std-widgets.slint";
 
+// Struct that exports relevant CheckBox properties
 export struct TaskItem {
     title: string,
     checked: bool,
 }
 
-// component AppCheckBox inherits CheckBox {
-
-// }
-
 component AppListView inherits ListView {
-    in-out property <[string]> items: ["Get started"];
-    in-out property <[TaskItem]> task_items;
+    in-out property <[TaskItem]> items;
 
-
-    // for item in items: CheckBox {
-    //     text: item;
-    // }
-    
-    for task_item in task_items: CheckBox {
-        text: task_item.title;
-        checked: task_item.checked;
+    // Repeats CheckBox component for every ListView item
+    for item in items: CheckBox {
+        text: item.title;
+        checked: item.checked;
+        // Updates TaskItem struct when CheckBox is clicked
         toggled => {
-            task_item.checked = self.checked;
+            item.checked = self.checked;
         }
     }
 }
 
 export component AppWindow inherits Window {
-    in-out property <[string]> items <=> app_listview.items;
-    in-out property <[TaskItem]> task_items <=> app_listview.task_items;
+    in-out property <[TaskItem]> items <=> app_listview.items;
     in-out property <string> input_text;
     callback request-add-item();
     callback request-remove-item();
