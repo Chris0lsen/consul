@@ -1,10 +1,12 @@
-import { Button, ListView } from "std-widgets.slint";
+import { Button, CheckBox, ListView } from "std-widgets.slint";
 
 component AppListView inherits ListView {
     in-out property <[string]> items: ["Get started"];
 
-    for item in items: Text {
-        text: item;
+    for item in items: HorizontalLayout {
+        CheckBox {
+            text: item;
+        }
     }
 }
 
@@ -13,10 +15,9 @@ export component AppWindow inherits Window {
     in-out property <string> input_text;
     callback request-add-item();
 
-
     VerticalLayout {
         TextInput {
-           text <=> input_text;
+            text <=> input_text;
         }
 
         Button {
@@ -26,6 +27,6 @@ export component AppWindow inherits Window {
             }
         }
 
-        app_listview := AppListView {}
+        app_listview := AppListView { }
     }
 }
