@@ -1,10 +1,10 @@
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
-// use crate::ui_events::UIEvent; // Import the UIEvent enum
+                                  // use crate::ui_events::UIEvent; // Import the UIEvent enum
+use slint::ComponentHandle;
 use slint::Model;
 use slint::ModelRc;
 use slint::SharedString;
 use slint::VecModel;
-use slint::ComponentHandle;
 use std::rc::Rc;
 
 pub enum AppListviewEvent {
@@ -28,10 +28,7 @@ pub fn init(ui: &AppWindow) {
 impl AppWindow {
     pub fn handle_event(&self, event: AppListviewEvent) {
         match event {
-            AppListviewEvent::AddItem(text) => {
-               handle_add_item(&self, text)
-            }
-            // Add more event handling here as needed
+            AppListviewEvent::AddItem(text) => handle_add_item(&self, text), // Add more event handling here as needed
         }
     }
 }
