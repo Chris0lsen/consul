@@ -1,4 +1,4 @@
-name: Cargo Build
+name: Format and Build
 
 on:
   workflow_dispatch:
