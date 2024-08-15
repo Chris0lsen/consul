@@ -1,21 +1,32 @@
 import { Button, CheckBox, ListView } from "std-widgets.slint";
 
-component AppListView inherits ListView {
-    in-out property <[string]> items: ["Get started"];
+// Struct that exports relevant CheckBox properties
+export struct TaskItem {
+    title: string,
+    checked: bool,
+}
 
-    for item in items: HorizontalLayout {
-        CheckBox {
-            text: item;
+component AppListView inherits ListView {
+    in-out property <[TaskItem]> items;
+
+    // Repeats CheckBox component for every ListView item
+    for item in items: CheckBox {
+        text: item.title;
+        checked: item.checked;
+        // Updates TaskItem struct when CheckBox is clicked
+        toggled => {
+            item.checked = self.checked;
         }
     }
 }
 
 export component AppWindow inherits Window {
-    in-out property <[string]> items <=> app_listview.items;
-    in-out property <string> input_text;
-    callback request-add-item();
     width:720px;
     height: 640px;
+    in-out property <[TaskItem]> items <=> app_listview.items;
+    in-out property <string> input_text;
+    callback request-add-item();
+    callback request-remove-item();
 
     VerticalLayout {
         width: 100%;
@@ -25,10 +36,19 @@ export component AppWindow inherits Window {
             text <=> input_text;
         }
 
-        Button {
-            text: "Add";
-            clicked => {
-                root.request-add-item();
+        HorizontalLayout {
+            Button {
+                text: "Add";
+                clicked => {
+                    root.request-add-item();
+                }
+            }
+
+            Button {
+                text: "Remove";
+                clicked => {
+                    root.request-remove-item();
+                }
             }
         }
 
