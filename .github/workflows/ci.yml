@@ -1,4 +1,4 @@
-name: Cargo Build
+name: Format and Build
 
 on:
   workflow_dispatch:
@@ -13,9 +13,14 @@ env:
 jobs:
   build:
     name: consul - latest
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+      name: Checkout code
+
+    - name: Format
+      run: cargo fmt -- --check
+
     - name: Build
       run: cargo build --verbose

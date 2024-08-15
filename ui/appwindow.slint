@@ -1,4 +1,4 @@
-import { Button, ListView, CheckBox } from "std-widgets.slint";
+import { Button, CheckBox, ListView } from "std-widgets.slint";
 
 // Struct that exports relevant CheckBox properties
 export struct TaskItem {
@@ -21,15 +21,19 @@ component AppListView inherits ListView {
 }
 
 export component AppWindow inherits Window {
+    width:720px;
+    height: 640px;
     in-out property <[TaskItem]> items <=> app_listview.items;
     in-out property <string> input_text;
     callback request-add-item();
     callback request-remove-item();
 
-
     VerticalLayout {
+        width: 100%;
+        height: 100%;
+        padding: 8px;
         TextInput {
-           text <=> input_text;
+            text <=> input_text;
         }
 
         HorizontalLayout {
@@ -48,6 +52,6 @@ export component AppWindow inherits Window {
             }
         }
 
-        app_listview := AppListView {}
+        app_listview := AppListView { }
     }
 }

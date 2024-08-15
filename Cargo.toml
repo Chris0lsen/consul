@@ -1,7 +1,7 @@
 [package]
-name = "my-project"
+name = "consul"
 version = "0.1.0"
-authors = ["colsen <colsen@estee.com>"]
+authors = ["chris0lsen <chris@chrisolsen.net>", "ircjwin <christopherjamesirwin@gmail.com>"]
 edition = "2021"
 build = "build.rs"
 
