@@ -11,14 +11,15 @@ component ListViewItem inherits GridLayout {
     in-out property <bool> row-has-focus;
     callback row-clicked();
     callback save-item();
-    Row {
+    callback checkbox-clicked();
 
+    Row {
         HorizontalLayout {
             CheckBox {
                 checked: item.checked;
                 // Updates TaskItem struct when CheckBox is clicked
-        toggled => {
-                    item.checked = self.checked;
+                toggled => {
+                    root.checkbox-clicked();
                 }
             }
 
@@ -31,10 +32,14 @@ component ListViewItem inherits GridLayout {
 
 component AppListView inherits ListView {
     in-out property <[TaskItem]> items;
+    in-out property <bool> pressed;
 
     // Repeats CheckBox component for every ListView item
     for item in items: ListViewItem {
         item: item;
+        checkbox-clicked => {
+            item.checked = !item.checked;
+        }
     }
 }
 
@@ -44,7 +49,7 @@ export component AppWindow inherits Window {
     in-out property <[TaskItem]> items <=> app_listview.items;
     in-out property <string> input_text;
     callback request-add-item();
-    callback request-remove-item();
+    callback request-remove-checked-items();
 
     VerticalLayout {
         width: 100%;
@@ -65,7 +70,7 @@ export component AppWindow inherits Window {
             Button {
                 text: "Remove";
                 clicked => {
-                    root.request-remove-item();
+                    root.request-remove-checked-items();
                 }
             }
         }

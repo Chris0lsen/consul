@@ -113,7 +113,7 @@ fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
         // Removes checked items and adjusts offset to maintain index order
         let mut offset = 0;
         for i in 0..items_model.row_count() {
-            println!("{:?}", items_model.row_data(i).unwrap());
+            println!("{:?}", items_model.row_data(i - offset).unwrap());
 
             if items_model.row_data(i - offset).unwrap().checked {
                 items_model.remove(i - offset);
