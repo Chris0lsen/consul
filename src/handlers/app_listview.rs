@@ -13,7 +13,7 @@ use std::thread;
 
 pub enum AppListviewEvent {
     AddItem(),
-    RemoveItem(),
+    RemoveCheckedItems(),
     //ClickItem(),
     // Add more events here as needed
 }
@@ -31,8 +31,8 @@ pub fn init(ui: &AppWindow) {
         while let Ok((app_window, event)) = rx.recv() {
             match event {
                 AppListviewEvent::AddItem() => handle_add_item(app_window),
-                AppListviewEvent::RemoveItem() => handle_remove_item(app_window), // Add more event handling here as needed
-                                                                                  // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
+                AppListviewEvent::RemoveCheckedItems() => handle_remove_checked_items(app_window), // Add more event handling here as needed
+                                                                                                   // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
             }
         }
     });
@@ -65,11 +65,11 @@ pub fn init(ui: &AppWindow) {
 
     let remove_item_handler_arc = Arc::clone(&ui_arc);
     let remove_item_tx = tx.clone();
-    ui.on_request_remove_item(move || {
+    ui.on_request_remove_checked_items(move || {
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&remove_item_handler_arc);
 
-        let _ = remove_item_tx.send((local_handler_clone, AppListviewEvent::RemoveItem()));
+        let _ = remove_item_tx.send((local_handler_clone, AppListviewEvent::RemoveCheckedItems()));
     });
 }
 
@@ -84,6 +84,7 @@ fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
             .as_any()
             .downcast_ref::<VecModel<TaskItem>>()
             .expect("We know we set a VecModel earlier");
+
         let text = ui.get_input_text();
 
         // Appends user input and empties TextInput component
@@ -97,7 +98,7 @@ fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
     });
 }
 
-fn handle_remove_item(app: Arc<Mutex<Weak<AppWindow>>>) {
+fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
     // Lock app
     let app_weak = app.lock().unwrap();
 
@@ -112,6 +113,8 @@ fn handle_remove_item(app: Arc<Mutex<Weak<AppWindow>>>) {
         // Removes checked items and adjusts offset to maintain index order
         let mut offset = 0;
         for i in 0..items_model.row_count() {
+            println!("{:?}", items_model.row_data(i).unwrap());
+
             if items_model.row_data(i - offset).unwrap().checked {
                 items_model.remove(i - offset);
                 offset += 1;
