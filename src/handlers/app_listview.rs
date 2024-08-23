@@ -14,7 +14,6 @@ use std::thread;
 pub enum AppListviewEvent {
     AddItem(),
     RemoveCheckedItems(),
-    //ClickItem(),
     // Add more events here as needed
 }
 
@@ -31,8 +30,7 @@ pub fn init(ui: &AppWindow) {
         while let Ok((app_window, event)) = rx.recv() {
             match event {
                 AppListviewEvent::AddItem() => handle_add_item(app_window),
-                AppListviewEvent::RemoveCheckedItems() => handle_remove_checked_items(app_window), // Add more event handling here as needed
-                                                                                                   // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
+                AppListviewEvent::RemoveCheckedItems() => handle_remove_checked_items(app_window), 
             }
         }
     });

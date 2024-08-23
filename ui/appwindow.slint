@@ -10,7 +10,7 @@ component ListViewItem inherits GridLayout {
     in-out property <TaskItem> item;
     in-out property <bool> row-has-focus;
     callback row-clicked();
-    callback save-item();
+    callback request-save-item(string);
     callback checkbox-clicked();
 
     Row {
@@ -25,6 +25,9 @@ component ListViewItem inherits GridLayout {
 
             LineEdit {
                 text: item.title;
+                edited(text) => {
+                    root.request-save-item(self.text);
+                }
             }
         }
     }
