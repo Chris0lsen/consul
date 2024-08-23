@@ -6,6 +6,11 @@ export struct TaskItem {
     checked: bool,
 }
 
+export struct TabItem {
+    title: string,
+    items: [TaskItem],
+}
+
 component AppListView inherits ListView {
     in-out property <[TaskItem]> items;
 
@@ -20,10 +25,40 @@ component AppListView inherits ListView {
     }
 }
 
+component AppTabWidget inherits Window {
+    preferred-height: 200px;
+    in-out property <int> active-tab;
+    in property <[TabItem]> items;
+
+    VerticalLayout {
+        tab_bar := HorizontalLayout {
+            spacing: 3px;
+            for item[index] in items: Button {
+                text: item.title;
+                clicked => {
+                    root.active-tab = index;
+                }
+            }
+        }
+
+        Rectangle {
+            for item[index] in items: Rectangle {
+                clip: true;
+                Rectangle {
+                    background: Math.mod(index, 2) == 0 ? red : blue;
+                    x: root.active-tab == index ? 0 : root.active-tab < index ? - self.width - 1px : parent.width + 1px;
+                    animate x { duration: 125ms; easing: ease; }
+                }
+            }
+        }
+    }
+}
+
 export component AppWindow inherits Window {
     width:720px;
     height: 640px;
     in-out property <[TaskItem]> items <=> app_listview.items;
+    in-out property <[TabItem]> tab_items <=> app_tabwidget.items;
     in-out property <string> input_text;
     callback request-add-item();
     callback request-remove-item();
@@ -53,5 +88,7 @@ export component AppWindow inherits Window {
         }
 
         app_listview := AppListView { }
+
+        app_tabwidget := AppTabWidget { }
     }
 }
