@@ -1,6 +1,7 @@
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
                                   // use crate::ui_events::UIEvent; // Import the UIEvent enum
 use crate::ui_modules::TaskItem;
+use crate::UIEvent;
 use slint::ComponentHandle;
 use slint::Model;
 use slint::ModelRc;
@@ -8,33 +9,10 @@ use slint::SharedString;
 use slint::VecModel;
 use slint::Weak;
 use std::rc::Rc;
-use std::sync::{mpsc, Arc, Mutex};
-use std::thread;
+use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
 
-pub enum AppListviewEvent {
-    AddItem(),
-    RemoveCheckedItems(),
-    // Add more events here as needed
-}
-
-// The format of the messages that we'll pass to the worker thread
-type Message = (Arc<Mutex<Weak<AppWindow>>>, AppListviewEvent);
-
-pub fn init(ui: &AppWindow) {
-    // Initialize channel to pass messages to worker thread
-    let (tx, rx): (mpsc::Sender<Message>, mpsc::Receiver<Message>) = mpsc::channel();
-
-    // Initialize worker thread
-    let _worker_thread_handle = thread::spawn(move || {
-        // Loop over incoming messages
-        while let Ok((app_window, event)) = rx.recv() {
-            match event {
-                AppListviewEvent::AddItem() => handle_add_item(app_window),
-                AppListviewEvent::RemoveCheckedItems() => handle_remove_checked_items(app_window), 
-            }
-        }
-    });
-
+pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {
     // Initialize AppWindow items with placeholder values
     let items_model: Rc<VecModel<TaskItem>> = Rc::new(VecModel::from(vec![
         TaskItem {
@@ -58,7 +36,7 @@ pub fn init(ui: &AppWindow) {
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&add_item_handler_arc);
 
-        let _ = add_item_tx.send((local_handler_clone, AppListviewEvent::AddItem()));
+        let _ = add_item_tx.send((local_handler_clone, UIEvent::AddItem()));
     });
 
     let remove_item_handler_arc = Arc::clone(&ui_arc);
@@ -67,11 +45,11 @@ pub fn init(ui: &AppWindow) {
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&remove_item_handler_arc);
 
-        let _ = remove_item_tx.send((local_handler_clone, AppListviewEvent::RemoveCheckedItems()));
+        let _ = remove_item_tx.send((local_handler_clone, UIEvent::RemoveCheckedItems()));
     });
 }
 
-fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
+pub fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
     // Lock app
     let app_weak = app.lock().unwrap();
 
@@ -96,7 +74,7 @@ fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
     });
 }
 
-fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
+pub fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
     // Lock app
     let app_weak = app.lock().unwrap();
 
