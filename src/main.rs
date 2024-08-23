@@ -36,7 +36,8 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
-    app_listview::init(&ui, tx);
+    let app_listview_tx = tx.clone();
+    app_listview::init(&ui, app_listview_tx);
 
     ui.run()
 }
