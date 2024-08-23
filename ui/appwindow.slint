@@ -1,4 +1,4 @@
-import { Button, CheckBox, ListView } from "std-widgets.slint";
+import { Button, CheckBox, ListView, LineEdit } from "std-widgets.slint";
 
 // Struct that exports relevant CheckBox properties
 export struct TaskItem {
@@ -11,16 +11,39 @@ export struct TabItem {
     items: [TaskItem],
 }
 
+component ListViewItem inherits GridLayout {
+    in-out property <TaskItem> item;
+    in-out property <bool> row-has-focus;
+    callback row-clicked();
+    callback save-item();
+    callback checkbox-clicked();
+
+    Row {
+        HorizontalLayout {
+            CheckBox {
+                checked: item.checked;
+                // Updates TaskItem struct when CheckBox is clicked
+                toggled => {
+                    root.checkbox-clicked();
+                }
+            }
+
+            LineEdit {
+                text: item.title;
+            }
+        }
+    }
+}
+
 component AppListView inherits ListView {
     in-out property <[TaskItem]> items;
+    in-out property <bool> pressed;
 
     // Repeats CheckBox component for every ListView item
-    for item in items: CheckBox {
-        text: item.title;
-        checked: item.checked;
-        // Updates TaskItem struct when CheckBox is clicked
-        toggled => {
-            item.checked = self.checked;
+    for item in items: ListViewItem {
+        item: item;
+        checkbox-clicked => {
+            item.checked = !item.checked;
         }
     }
 }
@@ -55,13 +78,13 @@ component AppTabWidget inherits Window {
 }
 
 export component AppWindow inherits Window {
-    width:720px;
+    width: 720px;
     height: 640px;
     in-out property <[TaskItem]> items <=> app_listview.items;
     in-out property <[TabItem]> tab_items <=> app_tabwidget.items;
     in-out property <string> input_text;
     callback request-add-item();
-    callback request-remove-item();
+    callback request-remove-checked-items();
 
     VerticalLayout {
         width: 100%;
@@ -82,7 +105,7 @@ export component AppWindow inherits Window {
             Button {
                 text: "Remove";
                 clicked => {
-                    root.request-remove-item();
+                    root.request-remove-checked-items();
                 }
             }
         }
