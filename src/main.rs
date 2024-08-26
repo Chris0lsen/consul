@@ -2,6 +2,7 @@ mod handlers;
 mod ui_modules;
 use crate::handlers::app_listview;
 use crate::ui_modules::AppWindow;
+use slint::SharedString;
 use slint::Weak;
 
 use slint::ComponentHandle;
@@ -11,7 +12,7 @@ use std::thread; // Use the re-exported AppWindow type
 pub enum UIEvent {
     AddItem(),
     RemoveCheckedItems(),
-    // Add more events here as needed
+    SaveItem(usize, SharedString),
 }
 
 // The format of the messages that we'll pass to the worker thread
@@ -31,6 +32,9 @@ fn main() -> Result<(), slint::PlatformError> {
                 UIEvent::AddItem() => app_listview::handle_add_item(app_window),
                 UIEvent::RemoveCheckedItems() => {
                     app_listview::handle_remove_checked_items(app_window)
+                }
+                UIEvent::SaveItem(index, update) => {
+                    app_listview::handle_save_item(app_window, index, update)
                 }
             }
         }
