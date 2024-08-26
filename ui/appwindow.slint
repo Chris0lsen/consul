@@ -36,12 +36,16 @@ component ListViewItem inherits GridLayout {
 component AppListView inherits ListView {
     in-out property <[TaskItem]> items;
     in-out property <bool> pressed;
+    callback request-save-item(int, string);
 
     // Repeats CheckBox component for every ListView item
-    for item in items: ListViewItem {
+    for item[i] in items: ListViewItem {
         item: item;
         checkbox-clicked => {
             item.checked = !item.checked;
+        }
+        request-save-item(update) => {
+            root.request-save-item(i, update);
         }
     }
 }
@@ -53,6 +57,7 @@ export component AppWindow inherits Window {
     in-out property <string> input_text;
     callback request-add-item();
     callback request-remove-checked-items();
+    callback request-save-item(int, string);
 
     VerticalLayout {
         width: 100%;
@@ -78,6 +83,10 @@ export component AppWindow inherits Window {
             }
         }
 
-        app_listview := AppListView { }
+        app_listview := AppListView {
+            request-save-item(index, update) => {
+                 root.request-save-item(index, update);
+            }
+         }
     }
 }
