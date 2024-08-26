@@ -32,10 +32,10 @@ fn main() -> Result<(), slint::PlatformError> {
                 UIEvent::AddItem() => app_listview::handle_add_item(app_window),
                 UIEvent::RemoveCheckedItems() => {
                     app_listview::handle_remove_checked_items(app_window)
-                },
+                }
                 UIEvent::SaveItem(index, update) => {
                     app_listview::handle_save_item(app_window, index, update)
-                },
+                }
             }
         }
     });

@@ -53,7 +53,10 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
     ui.on_request_save_item(move |index, update| {
         let local_handler_clone = Arc::clone(&save_item_handler_arc);
 
-        let _ = save_item_tx.send((local_handler_clone, UIEvent::SaveItem(index.try_into().unwrap(), update)));
+        let _ = save_item_tx.send((
+            local_handler_clone,
+            UIEvent::SaveItem(index.try_into().unwrap(), update),
+        ));
     })
 }
 
@@ -109,17 +112,17 @@ pub fn handle_save_item(app: Arc<Mutex<Weak<AppWindow>>>, index: usize, update: 
     let app_weak = app.lock().unwrap();
 
     let _ = app_weak.upgrade_in_event_loop(move |ui| {
-            // Convert ModelRc to Model for access to Vector methods
-            let items_model_rc = ui.get_items();
-            let items_model = items_model_rc
-                .as_any()
-                .downcast_ref::<VecModel<TaskItem>>()
-                .expect("We know we set a VecModel earlier");
+        // Convert ModelRc to Model for access to Vector methods
+        let items_model_rc = ui.get_items();
+        let items_model = items_model_rc
+            .as_any()
+            .downcast_ref::<VecModel<TaskItem>>()
+            .expect("We know we set a VecModel earlier");
 
-            let new_task_item = TaskItem {
-                title: update,
-                checked: items_model.row_data(index).unwrap().checked,
-            };
-            items_model.set_row_data(index, new_task_item);
+        let new_task_item = TaskItem {
+            title: update,
+            checked: items_model.row_data(index).unwrap().checked,
+        };
+        items_model.set_row_data(index, new_task_item);
     });
 }
