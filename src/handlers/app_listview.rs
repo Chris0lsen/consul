@@ -62,7 +62,10 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
 
         let _ = save_item_tx.send((
             local_handler_clone,
-            UIEvent::AppListView(AppListviewEvent::SaveItem(index.try_into().unwrap(), update)),
+            UIEvent::AppListView(AppListviewEvent::SaveItem(
+                index.try_into().unwrap(),
+                update,
+            )),
         ));
     });
 }

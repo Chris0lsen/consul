@@ -3,8 +3,7 @@ use slint::SharedString;
 pub enum AppListviewEvent {
     AddItem(),
     RemoveCheckedItems(),
-    SaveItem(usize, SharedString)
-    // Add more events here as needed
+    SaveItem(usize, SharedString), // Add more events here as needed
 }
 
 pub enum AppTabWidgetEvent {

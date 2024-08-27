@@ -1,23 +1,20 @@
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
                                   // use crate::ui_events::UIEvent; // Import the UIEvent enum
-use crate::ui_modules::TaskItem;
-use crate::ui_modules::TabItem;
-use slint::ModelRc;
-use slint::Weak;
-use slint::VecModel;
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
-use std::sync::mpsc::Sender;
 use crate::events::*;
-
+use crate::ui_modules::TabItem;
+use crate::ui_modules::TaskItem;
+use slint::ModelRc;
+use slint::VecModel;
+use slint::Weak;
+use std::rc::Rc;
+use std::sync::mpsc::Sender;
+use std::sync::{Arc, Mutex};
 
 pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {
-    let tab_model = Rc::new(VecModel::from(vec![
-        TaskItem {
-            title: "Hello".into(),
-            checked: false,
-        }
-    ]));
+    let tab_model = Rc::new(VecModel::from(vec![TaskItem {
+        title: "Hello".into(),
+        checked: false,
+    }]));
     let tab_model_rc = ModelRc::from(tab_model.clone());
     let tmr_2 = tab_model_rc.clone();
 
