@@ -8,7 +8,7 @@ use slint::VecModel;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Sender;
-use crate::handlers::ui_enum::*;
+use crate::events::*;
 
 
 pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {

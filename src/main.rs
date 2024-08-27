@@ -1,4 +1,5 @@
 mod handlers;
+mod events;
 mod ui_modules;
 use slint::ComponentHandle;
 use slint::Weak;
@@ -7,7 +8,7 @@ use std::sync::{mpsc, Arc, Mutex};
 use crate::handlers::app_tabwidget;
 use crate::handlers::app_listview;
 use crate::handlers::ui_worker;
-use crate::handlers::ui_enum::*;
+use crate::events::*;
 use crate::ui_modules::AppWindow; // Use the re-exported AppWindow type
 
 fn main() -> Result<(), slint::PlatformError> {

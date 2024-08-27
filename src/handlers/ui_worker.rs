@@ -4,7 +4,7 @@ use slint::Weak;
 use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 use std::thread;
-use crate::handlers::ui_enum::*;
+use crate::events::*;
 use crate::handlers::app_listview;
 
 pub fn init(rx: Receiver<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {

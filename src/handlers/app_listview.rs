@@ -1,6 +1,6 @@
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
                                   // use crate::ui_events::UIEvent; // Import the UIEvent enum
-use crate::handlers::ui_enum::*;
+use crate::events::*;
 use crate::ui_modules::TaskItem;
 use slint::ComponentHandle;
 use slint::Model;
