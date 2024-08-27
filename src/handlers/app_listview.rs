@@ -1,5 +1,6 @@
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
                                   // use crate::ui_events::UIEvent; // Import the UIEvent enum
+use crate::handlers::ui_enum::*;
 use crate::ui_modules::TaskItem;
 use slint::ComponentHandle;
 use slint::Model;
@@ -8,10 +9,8 @@ use slint::SharedString;
 use slint::VecModel;
 use slint::Weak;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Sender;
-use crate::handlers::ui_enum::*;
-
+use std::sync::{Arc, Mutex};
 
 pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {
     // Initialize AppWindow items with placeholder values
@@ -37,7 +36,10 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&add_item_handler_arc);
 
-        let _ = add_item_tx.send((local_handler_clone, UIEvent::AppListView(AppListviewEvent::AddItem())));
+        let _ = add_item_tx.send((
+            local_handler_clone,
+            UIEvent::AppListView(AppListviewEvent::AddItem()),
+        ));
     });
 
     let remove_item_handler_arc = Arc::clone(&ui_arc);
@@ -46,7 +48,22 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&remove_item_handler_arc);
 
-        let _ = remove_item_tx.send((local_handler_clone, UIEvent::AppListView(AppListviewEvent::RemoveCheckedItems())));
+        let _ = remove_item_tx.send((
+            local_handler_clone,
+            UIEvent::AppListView(AppListviewEvent::RemoveCheckedItems()),
+        ));
+    });
+
+    let save_item_handler_arc = Arc::clone(&ui_arc);
+    let save_item_tx = tx.clone();
+    ui.on_request_save_item(move |index, update| {
+        // Clone Arc for thread
+        let local_handler_clone = Arc::clone(&save_item_handler_arc);
+
+        let _ = save_item_tx.send((
+            local_handler_clone,
+            UIEvent::AppListView(AppListviewEvent::SaveItem(index.try_into().unwrap(), update)),
+        ));
     });
 }
 
@@ -54,6 +71,7 @@ pub fn handle_event(app_window: Arc<Mutex<Weak<AppWindow>>>, event: AppListviewE
     match event {
         AppListviewEvent::AddItem() => handle_add_item(app_window),
         AppListviewEvent::RemoveCheckedItems() => handle_remove_checked_items(app_window),
+        AppListviewEvent::SaveItem(index, update) => handle_save_item(app_window, index, update),
     }
 }
 
@@ -85,7 +103,6 @@ fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
 fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
     // Lock app
     let app_weak = app.lock().unwrap();
-
     let _ = app_weak.upgrade_in_event_loop(move |ui| {
         // Convert ModelRc to Model for access to Vector methods
         let items_model_rc = ui.get_items();
@@ -103,6 +120,27 @@ fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
                 items_model.remove(i - offset);
                 offset += 1;
             }
+        }
+    });
+}
+fn handle_save_item(app: Arc<Mutex<Weak<AppWindow>>>, index: usize, update: SharedString) {
+    let app_weak = app.lock().unwrap();
+
+    let _ = app_weak.upgrade_in_event_loop(move |ui| {
+        // Convert ModelRc to Model for access to Vector methods
+        let items_model_rc = ui.get_items();
+        let items_model = items_model_rc
+            .as_any()
+            .downcast_ref::<VecModel<TaskItem>>()
+            .expect("We know we set a VecModel earlier");
+
+        let new_task_item = TaskItem {
+            title: update,
+            checked: items_model.row_data(index).unwrap().checked,
+        };
+        items_model.set_row_data(index, new_task_item);
+        for i in 0..items_model.row_count() {
+            println!("{:?}", items_model.row_data(i).unwrap());
         }
     });
 }

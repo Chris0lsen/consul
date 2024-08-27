@@ -1,7 +1,9 @@
+use slint::SharedString;
+
 pub enum AppListviewEvent {
     AddItem(),
     RemoveCheckedItems(),
-    //ClickItem(),
+    SaveItem(usize, SharedString)
     // Add more events here as needed
 }
 
