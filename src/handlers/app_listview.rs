@@ -1,7 +1,7 @@
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
                                   // use crate::ui_events::UIEvent; // Import the UIEvent enum
+use crate::events::*;
 use crate::ui_modules::TaskItem;
-use crate::UIEvent;
 use slint::ComponentHandle;
 use slint::Model;
 use slint::ModelRc;
@@ -36,7 +36,10 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&add_item_handler_arc);
 
-        let _ = add_item_tx.send((local_handler_clone, UIEvent::AddItem()));
+        let _ = add_item_tx.send((
+            local_handler_clone,
+            UIEvent::AppListView(AppListviewEvent::AddItem()),
+        ));
     });
 
     let remove_item_handler_arc = Arc::clone(&ui_arc);
@@ -45,22 +48,37 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
         // Clone Arc for thread
         let local_handler_clone = Arc::clone(&remove_item_handler_arc);
 
-        let _ = remove_item_tx.send((local_handler_clone, UIEvent::RemoveCheckedItems()));
+        let _ = remove_item_tx.send((
+            local_handler_clone,
+            UIEvent::AppListView(AppListviewEvent::RemoveCheckedItems()),
+        ));
     });
 
     let save_item_handler_arc = Arc::clone(&ui_arc);
     let save_item_tx = tx.clone();
     ui.on_request_save_item(move |index, update| {
+        // Clone Arc for thread
         let local_handler_clone = Arc::clone(&save_item_handler_arc);
 
         let _ = save_item_tx.send((
             local_handler_clone,
-            UIEvent::SaveItem(index.try_into().unwrap(), update),
+            UIEvent::AppListView(AppListviewEvent::SaveItem(
+                index.try_into().unwrap(),
+                update,
+            )),
         ));
-    })
+    });
 }
 
-pub fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
+pub fn handle_event(app_window: Arc<Mutex<Weak<AppWindow>>>, event: AppListviewEvent) {
+    match event {
+        AppListviewEvent::AddItem() => handle_add_item(app_window),
+        AppListviewEvent::RemoveCheckedItems() => handle_remove_checked_items(app_window),
+        AppListviewEvent::SaveItem(index, update) => handle_save_item(app_window, index, update),
+    }
+}
+
+fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
     // Lock app
     let app_weak = app.lock().unwrap();
 
@@ -85,10 +103,9 @@ pub fn handle_add_item(app: Arc<Mutex<Weak<AppWindow>>>) {
     });
 }
 
-pub fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
+fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
     // Lock app
     let app_weak = app.lock().unwrap();
-
     let _ = app_weak.upgrade_in_event_loop(move |ui| {
         // Convert ModelRc to Model for access to Vector methods
         let items_model_rc = ui.get_items();
@@ -100,6 +117,8 @@ pub fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
         // Removes checked items and adjusts offset to maintain index order
         let mut offset = 0;
         for i in 0..items_model.row_count() {
+            println!("{:?}", items_model.row_data(i - offset).unwrap());
+
             if items_model.row_data(i - offset).unwrap().checked {
                 items_model.remove(i - offset);
                 offset += 1;
@@ -107,8 +126,7 @@ pub fn handle_remove_checked_items(app: Arc<Mutex<Weak<AppWindow>>>) {
         }
     });
 }
-
-pub fn handle_save_item(app: Arc<Mutex<Weak<AppWindow>>>, index: usize, update: SharedString) {
+fn handle_save_item(app: Arc<Mutex<Weak<AppWindow>>>, index: usize, update: SharedString) {
     let app_weak = app.lock().unwrap();
 
     let _ = app_weak.upgrade_in_event_loop(move |ui| {
@@ -124,5 +142,8 @@ pub fn handle_save_item(app: Arc<Mutex<Weak<AppWindow>>>, index: usize, update: 
             checked: items_model.row_data(index).unwrap().checked,
         };
         items_model.set_row_data(index, new_task_item);
+        for i in 0..items_model.row_count() {
+            println!("{:?}", items_model.row_data(i).unwrap());
+        }
     });
 }
