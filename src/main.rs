@@ -1,5 +1,7 @@
+mod data_structs;
 mod events;
 mod handlers;
+mod io;
 mod ui_modules;
 use slint::ComponentHandle;
 use slint::Weak;
@@ -16,6 +18,9 @@ fn main() -> Result<(), slint::PlatformError> {
     let (tx, rx): (mpsc::Sender<Message>, mpsc::Receiver<Message>) = mpsc::channel();
     let listview_tx = tx.clone();
     let tabwidget_tx = tx.clone();
+
+    // Load from disk
+    let _ = io::load();
 
     let ui = AppWindow::new()?;
     ui_worker::init(rx);

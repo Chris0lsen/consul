@@ -1,0 +1,22 @@
+{
+    "lists": [
+      {
+        "title": "Home",
+        "tasks": [
+          {
+            "title": "Hello World!",
+            "checked": false
+          }
+        ]
+      },
+      {
+        "title": "Work",
+        "tasks": [
+          {
+             "title": "Hola Mundo",
+             "checked": true
+          }
+        ]
+      }
+    ]
+  }
