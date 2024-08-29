@@ -5,7 +5,6 @@ use crate::events::*;
 use crate::ui_modules::TabItem;
 use crate::ui_modules::TaskItem;
 use slint::ModelRc;
-use slint::SharedString;
 use slint::VecModel;
 use slint::Weak;
 use std::rc::Rc;
