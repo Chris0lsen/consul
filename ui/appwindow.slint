@@ -55,9 +55,10 @@ component AppListView inherits ListView {
 }
 
 component AppTabWidget inherits Window {
-    preferred-height: 200px;
+    preferred-height: 300px;
     in-out property <int> active-tab;
-    in property <[TabItem]> items;
+    in-out property <[TabItem]> items;
+    in-out property <string> input-text;
 
     VerticalLayout {
         tab_bar := HorizontalLayout {
@@ -89,9 +90,13 @@ export component AppWindow inherits Window {
     in-out property <[TaskItem]> items <=> app_listview.items;
     in-out property <[TabItem]> tab_items <=> app_tabwidget.items;
     in-out property <string> input_text;
+    in-out property <string> tab_input <=> app_tabwidget.input_text;
+    in-out property <int> active_tab <=> app_tabwidget.active_tab;
     callback request-add-item();
     callback request-remove-checked-items();
     callback request-save-item(int, string);
+    callback request-add-tab();
+    callback request-remove-tab();
 
     VerticalLayout {
         width: 100%;
@@ -122,6 +127,32 @@ export component AppWindow inherits Window {
                  root.request-save-item(index, update);
             }
          }
+
+         Rectangle {
+            background: whitesmoke;
+            border-width: 1px;
+            border-color: black;
+            TextInput {
+                text <=> tab_input;
+                preferred-height: 20px;
+            }
+        }
+
+        HorizontalLayout {
+            Button {
+                text: "Add Tab";
+                clicked => {
+                    root.request-add-tab();
+                }
+            }
+
+            Button {
+                text: "Remove Tab";
+                clicked => {
+                    root.request-remove-tab();
+                }
+            }
+        }
 
         app_tabwidget := AppTabWidget { }
     }

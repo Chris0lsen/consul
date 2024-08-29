@@ -3,9 +3,12 @@ use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
 use crate::events::*;
 use crate::ui_modules::TabItem;
 use crate::ui_modules::TaskItem;
+use slint::Model;
 use slint::ModelRc;
 use slint::VecModel;
 use slint::Weak;
+use slint::SharedString;
+use slint::ComponentHandle;
 use std::rc::Rc;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -31,4 +34,80 @@ pub fn init(ui: &AppWindow, tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) 
     ]));
     let items_model_rc = ModelRc::from(items_model.clone());
     ui.set_tab_items(items_model_rc);
+
+    // Initialize Arc to be cloned by each handler
+    let ui_arc = Arc::new(Mutex::new(ui.as_weak()));
+
+    let add_tab_handler_arc = Arc::clone(&ui_arc);
+    let add_tab_tx = tx.clone();
+    ui.on_request_add_tab(move || {
+        // Clone Arc for thread
+        let local_handler_clone = Arc::clone(&add_tab_handler_arc);
+
+        let _ = add_tab_tx.send((
+            local_handler_clone,
+            UIEvent::AppTabWidget(AppTabWidgetEvent::AddTab()),
+        ));
+    });
+
+    let remove_tab_handler_arc = Arc::clone(&ui_arc);
+    let remove_tab_tx = tx.clone();
+    ui.on_request_remove_tab(move || {
+        // Clone Arc for thread
+        let local_handler_clone = Arc::clone(&remove_tab_handler_arc);
+
+        let _ = remove_tab_tx.send((
+            local_handler_clone,
+            UIEvent::AppTabWidget(AppTabWidgetEvent::RemoveTab()),
+        ));
+    });
+}
+
+pub fn handle_event(app_window: Arc<Mutex<Weak<AppWindow>>>, event: AppTabWidgetEvent) {
+    match event {
+        AppTabWidgetEvent::AddTab() => handle_add_tab(app_window),
+        AppTabWidgetEvent::RemoveTab() => handle_remove_tab(app_window),
+    }
+}
+
+fn handle_add_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
+    // Lock app
+    let app_weak = app.lock().unwrap();
+
+    let _ = app_weak.upgrade_in_event_loop(move |ui| {
+        // Convert ModelRc to Model for access to Vector methods
+        let tabs_model_rc = ui.get_tab_items();
+        let tabs_model = tabs_model_rc
+            .as_any()
+            .downcast_ref::<VecModel<TabItem>>()
+            .expect("We know we set a VecModel earlier");
+
+        let text = ui.get_tab_input();
+
+        // Appends user input and empties TextInput component
+        if !text.is_empty() {
+            tabs_model.push(TabItem {
+                title: text.into(),
+                items: ui.get_items(),
+            });
+            ui.set_tab_input(SharedString::new());
+        }
+    });
+}
+
+fn handle_remove_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
+    // Lock app
+    let app_weak = app.lock().unwrap();
+
+    let _ = app_weak.upgrade_in_event_loop(move |ui| {
+        // Convert ModelRc to Model for access to Vector methods
+        let tabs_model_rc = ui.get_tab_items();
+        let tabs_model = tabs_model_rc
+            .as_any()
+            .downcast_ref::<VecModel<TabItem>>()
+            .expect("We know we set a VecModel earlier");
+        // Remove currently active tab
+        let active_tab = ui.get_active_tab().try_into().unwrap();
+        tabs_model.remove(active_tab);
+    });
 }
