@@ -5,7 +5,7 @@ use toml;
 
 use crate::data_structs::{Config, TaskListData};
 
-pub fn load() -> Result<()> {
+pub fn load() -> Result<TaskListData> {
     // Read the config file
     let config = read_config("config.toml").map_err(serde_json::Error::io)?;
     println!("Config: {:?}", config);
@@ -20,7 +20,7 @@ pub fn load() -> Result<()> {
     // Now you can use `data` in your application
     println!("{:?}", data);
 
-    Ok(())
+    Ok(data)
 }
 
 fn read_config(config_path: &str) -> std::result::Result<Config, std::io::Error> {

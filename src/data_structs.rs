@@ -1,20 +1,20 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Task {
-    title: String,
-    checked: bool,
+    pub title: String,
+    pub checked: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct List {
-    title: String,
-    tasks: Vec<Task>,
+    pub title: String,
+    pub tasks: Vec<Task>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TaskListData {
-    lists: Vec<List>,
+    pub lists: Vec<List>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
