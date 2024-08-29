@@ -5,8 +5,8 @@ mod io;
 mod ui_modules;
 use slint::ComponentHandle;
 use slint::Weak;
-use std::sync::{mpsc, Arc, Mutex};
 use std::error::Error;
+use std::sync::{mpsc, Arc, Mutex};
 
 use crate::events::*;
 use crate::handlers::app_listview;
