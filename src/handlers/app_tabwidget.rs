@@ -113,38 +113,63 @@ fn handle_remove_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
     });
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::sync::mpsc;
 
+    fn setup() -> AppWindow {
+        // Tests currently rely on placeholders established by init
+        // Test logic should be separated from this
+        let ui = AppWindow::new().unwrap();
+        type Message = (Arc<Mutex<Weak<AppWindow>>>, UIEvent);
+        let (tx, _): (mpsc::Sender<Message>, mpsc::Receiver<Message>) = mpsc::channel();
+        init(&ui, tx);
+
+        let item_model = Rc::new(VecModel::from(vec![TaskItem {
+            title: "Hello".into(),
+            checked: false,
+        }]));
+        let item_model_rc = ModelRc::from(item_model.clone());
+        ui.set_items(item_model_rc);
+
+        ui
+    }
 
     #[test]
     fn test_handle_add_tab() {
-        let _ = slint::invoke_from_event_loop( || {
-            let ui = AppWindow::new().unwrap();
-            type Message = (Arc<Mutex<Weak<AppWindow>>>, UIEvent);
-            let (tx, _): (mpsc::Sender<Message>, mpsc::Receiver<Message>) = mpsc::channel();
-            init(&ui, tx);
-
-            let item_model = Rc::new(VecModel::from(vec![TaskItem {
-                title: "Hello".into(),
-                checked: false,
-            }]));
-            let item_model_rc = ModelRc::from(item_model.clone());
-            ui.set_items(item_model_rc);
+        let _ = slint::invoke_from_event_loop(|| {
+            let ui = setup();
             ui.set_tab_input(SharedString::from("Goodbye"));
-
             let ui_arc = Arc::new(Mutex::new(ui.as_weak()));
-            handle_add_tab(ui_arc);
-
             let new_tab_model_rc = ui.get_tab_items();
             let new_tab_model = new_tab_model_rc
                 .as_any()
                 .downcast_ref::<VecModel<TabItem>>()
                 .expect("We know we set a VecModel earlier");
 
+            handle_add_tab(ui_arc);
+
             assert_eq!(new_tab_model.row_data(2).unwrap().title, "Goodbye");
+        });
+    }
+
+    #[test]
+    fn test_handle_remove_tab() {
+        let _ = slint::invoke_from_event_loop(|| {
+            let ui = setup();
+            ui.set_active_tab(1);
+            let ui_arc = Arc::new(Mutex::new(ui.as_weak()));
+            let new_tab_model_rc = ui.get_tab_items();
+            let new_tab_model = new_tab_model_rc
+                .as_any()
+                .downcast_ref::<VecModel<TabItem>>()
+                .expect("We know we set a VecModel earlier");
+
+            handle_remove_tab(ui_arc);
+
+            assert_eq!(new_tab_model.row_count(), 1);
         });
     }
 }
