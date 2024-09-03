@@ -17,7 +17,7 @@ pub fn init(rx: Receiver<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {
             match event {
                 UIEvent::AppListView(event) => app_listview::handle_event(app_window, event),
                 UIEvent::AppTabWidget(event) => app_tabwidget::handle_event(app_window, event), // Add more event handling here as needed
-                                                                                      // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
+                                                                                                // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
             }
         }
     });

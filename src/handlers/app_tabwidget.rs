@@ -1,15 +1,16 @@
 use crate::data_structs::TaskListData;
+use crate::io;
 use crate::ui_modules::AppWindow; // Import the re-exported AppWindow type
                                   // use crate::ui_events::UIEvent; // Import the UIEvent enum
 use crate::events::*;
 use crate::ui_modules::TabItem;
 use crate::ui_modules::TaskItem;
+use slint::ComponentHandle;
 use slint::Model;
 use slint::ModelRc;
+use slint::SharedString;
 use slint::VecModel;
 use slint::Weak;
-use slint::SharedString;
-use slint::ComponentHandle;
 use std::rc::Rc;
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
@@ -19,36 +20,7 @@ pub fn init(
     tx: Sender<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>,
     task_list_data: TaskListData,
 ) {
-    // Convert task_list_data.lists into TabItem
-    let tab_items: Vec<TabItem> = task_list_data
-        .lists
-        .into_iter()
-        .map(|list| {
-            // Convert each Task into a TaskItem
-            let task_items: Vec<TaskItem> = list
-                .tasks
-                .into_iter()
-                .map(|task| {
-                    TaskItem {
-                        // Convert Task fields into TaskItem fields
-                        title: task.title.clone().into(), // Adjust based on your actual struct fields
-                        checked: task.checked,            // Example boolean field
-                    }
-                })
-                .collect();
-
-            let task_items_model: Rc<VecModel<TaskItem>> = Rc::new(VecModel::from(task_items));
-            let task_items_model_rc = ModelRc::from(task_items_model.clone());
-
-            TabItem {
-                title: list.title.into(), // Convert String to appropriate type
-                items: task_items_model_rc,
-            }
-        })
-        .collect();
-
-    let items_model: Rc<VecModel<TabItem>> = Rc::new(VecModel::from(tab_items));
-    let items_model_rc = ModelRc::from(items_model.clone());
+    let items_model_rc = io::deserialize_task_list_data(task_list_data);
     ui.set_tab_items(items_model_rc);
 
     // Initialize Arc to be cloned by each handler
@@ -129,9 +101,10 @@ fn handle_remove_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
     });
 }
 
-
 #[cfg(test)]
 mod tests {
+    use crate::data_structs::{List, Task};
+
     use super::*;
     use std::sync::mpsc;
 
@@ -141,7 +114,18 @@ mod tests {
         let ui = AppWindow::new().unwrap();
         type Message = (Arc<Mutex<Weak<AppWindow>>>, UIEvent);
         let (tx, _): (mpsc::Sender<Message>, mpsc::Receiver<Message>) = mpsc::channel();
-        init(&ui, tx);
+        let tld = TaskListData {
+            lists: [List {
+                title: "Home".to_string(),
+                tasks: [Task {
+                    title: "Hello".to_string(),
+                    checked: false,
+                }]
+                .to_vec(),
+            }]
+            .to_vec(),
+        };
+        init(&ui, tx, tld);
 
         let item_model = Rc::new(VecModel::from(vec![TaskItem {
             title: "Hello".into(),
