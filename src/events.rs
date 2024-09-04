@@ -7,8 +7,8 @@ pub enum AppListviewEvent {
 }
 
 pub enum AppTabWidgetEvent {
-    AddItem(),
-    RemoveItem(),
+    AddTab(),
+    RemoveTab(),
     // Add more events here as needed
 }
 

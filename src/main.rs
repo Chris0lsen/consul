@@ -21,7 +21,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let tabwidget_tx = tx.clone();
 
     // Load from disk
-    let saved_data = io::load()?;
+    let config = io::load_config()?;
+    let saved_data = io::load_data(&config)?;
     let ui = AppWindow::new()?;
     ui_worker::init(rx);
     app_listview::init(&ui, listview_tx);

@@ -7,6 +7,8 @@ use std::sync::mpsc::Receiver;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
+use super::app_tabwidget;
+
 pub fn init(rx: Receiver<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {
     // Initialize worker thread
     let _worker_thread_handle = thread::spawn(move || {
@@ -14,8 +16,8 @@ pub fn init(rx: Receiver<(Arc<Mutex<Weak<AppWindow>>>, UIEvent)>) {
         while let Ok((app_window, event)) = rx.recv() {
             match event {
                 UIEvent::AppListView(event) => app_listview::handle_event(app_window, event),
-                UIEvent::AppTabWidget(event) => println!("THERE ARE NO EVENTS HERE"), // Add more event handling here as needed
-                                                                                      // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
+                UIEvent::AppTabWidget(event) => app_tabwidget::handle_event(app_window, event), // Add more event handling here as needed
+                                                                                                // AppListviewEvent::ClickItem() => handle_click_item(&app_window),
             }
         }
     });
