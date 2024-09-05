@@ -55,20 +55,28 @@ component AppListView inherits ListView {
 }
 
 component AppButton inherits Rectangle {
+    height: 35px;
+    border-radius: 5px;
+    drop-shadow-color: lightgrey;
+    drop-shadow-offset-x: 2px;
+    drop-shadow-offset-y: 2px;
+    background: root.hover ? whitesmoke : white;
     in-out property <string> text;
+    out property hover <=> touch.has-hover;
     callback clicked <=> touch.clicked;
 
-    border-width: 1px;
-    border-color: black;
-    line := LineEdit {
+    line := TextInput {
         text: text;
         read-only: true;
+        horizontal-alignment: center;
+        vertical-alignment: center;
         accepted => {
             self.clear-focus();
             self.read-only = true;
             touch.visible = true;
         }
     }
+
     touch := TouchArea {
         double-clicked => {
             self.visible = false;
@@ -86,6 +94,7 @@ component AppTabWidget inherits Window {
     in-out property <string> input-text;
 
     VerticalLayout {
+        spacing: 3px;
         tab_bar := HorizontalLayout {
             spacing: 3px;
             for item[index] in items: AppButton {
