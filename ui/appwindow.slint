@@ -54,6 +54,31 @@ component AppListView inherits ListView {
     }
 }
 
+component AppButton inherits Rectangle {
+    in-out property <string> text;
+    callback clicked <=> touch.clicked;
+
+    border-width: 1px;
+    border-color: black;
+    line := LineEdit {
+        text: text;
+        read-only: true;
+        accepted => {
+            self.clear-focus();
+            self.read-only = true;
+            touch.visible = true;
+        }
+    }
+    touch := TouchArea {
+        double-clicked => {
+            self.visible = false;
+            line.read-only = false;
+            line.select-all();
+            line.focus();
+        }
+    }
+}
+
 component AppTabWidget inherits Window {
     preferred-height: 300px;
     in-out property <int> active-tab;
@@ -63,7 +88,7 @@ component AppTabWidget inherits Window {
     VerticalLayout {
         tab_bar := HorizontalLayout {
             spacing: 3px;
-            for item[index] in items: Button {
+            for item[index] in items: AppButton {
                 text: item.title;
                 clicked => {
                     root.active-tab = index;

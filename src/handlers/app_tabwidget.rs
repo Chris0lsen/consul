@@ -109,8 +109,6 @@ mod tests {
     use std::sync::mpsc;
 
     fn setup() -> AppWindow {
-        // Tests currently rely on placeholders established by init
-        // Test logic should be separated from this
         let ui = AppWindow::new().unwrap();
         type Message = (Arc<Mutex<Weak<AppWindow>>>, UIEvent);
         let (tx, _): (mpsc::Sender<Message>, mpsc::Receiver<Message>) = mpsc::channel();
