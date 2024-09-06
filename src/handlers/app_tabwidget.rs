@@ -63,7 +63,6 @@ fn handle_add_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
     let app_weak = app.lock().unwrap();
 
     let _ = app_weak.upgrade_in_event_loop(move |ui| {
-        println!("WAKA FLOCKA FLAME");
         // Convert ModelRc to Model for access to Vector methods
         let tabs_model_rc = ui.get_tab_items();
         let tabs_model = tabs_model_rc
@@ -71,16 +70,15 @@ fn handle_add_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
             .downcast_ref::<VecModel<TabItem>>()
             .expect("We know we set a VecModel earlier");
 
-        let text = ui.get_tab_input();
+        // Appends new TabItem with generic title
+        tabs_model.push(TabItem {
+            title: "New List".into(),
+            items: ui.get_items(),
+        });
 
-        // Appends user input and empties TextInput component
-        if !text.is_empty() {
-            tabs_model.push(TabItem {
-                title: text.into(),
-                items: ui.get_items(),
-            });
-            ui.set_tab_input(SharedString::new());
-        }
+        // Displays recently added Tab
+        let new_active_tab = tabs_model.row_count() - 1;
+        ui.set_active_tab(new_active_tab.try_into().unwrap());
     });
 }
 
@@ -95,9 +93,20 @@ fn handle_remove_tab(app: Arc<Mutex<Weak<AppWindow>>>) {
             .as_any()
             .downcast_ref::<VecModel<TabItem>>()
             .expect("We know we set a VecModel earlier");
+
+        let active_tab = ui.get_active_tab();
+        let new_active_tab;
+        if (active_tab > 0) {
+            new_active_tab = active_tab - 1;
+        } else {
+            new_active_tab = 0;
+        }
+
         // Remove currently active tab
-        let active_tab = ui.get_active_tab().try_into().unwrap();
-        tabs_model.remove(active_tab);
+        tabs_model.remove(active_tab.try_into().unwrap());
+
+        // Select tab to the left of previously active tab
+        ui.set_active_tab(new_active_tab);
     });
 }
 
