@@ -54,19 +54,84 @@ component AppListView inherits ListView {
     }
 }
 
+component AppButton inherits Rectangle {
+    height: 35px;
+    min-width: 35px;
+    max-width: 70px;
+    border-radius: 5px;
+    drop-shadow-color: lightgrey;
+    drop-shadow-offset-x: 2px;
+    drop-shadow-offset-y: 2px;
+    background: root.hover ? whitesmoke : white;
+    in-out property <string> text;
+    out property hover <=> touch.has-hover;
+    out property line-focus <=> line.has-focus;
+    callback tab-clicked <=> touch.clicked;
+    callback remove-button-clicked();
+
+    HorizontalLayout {
+        line := TextInput {
+            text: text;
+            read-only: true;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+            // Enables TouchArea and makes TextInput read-only
+            accepted => {
+                self.clear-focus();
+                self.read-only = true;
+                touch.visible = true;
+            }
+
+            touch := TouchArea {
+                // Disables TouchArea and makes TextInput editable
+                double-clicked => {
+                    self.visible = false;
+                    line.read-only = false;
+                    line.select-all();
+                    line.focus();
+                }
+            }
+        }
+
+        remove-button := Button {
+            text: "X";
+            width: 30px;
+            clicked => {
+                root.remove-button-clicked();
+            }
+        }
+    }
+}
+
 component AppTabWidget inherits Window {
     preferred-height: 300px;
     in-out property <int> active-tab;
     in-out property <[TabItem]> items;
     in-out property <string> input-text;
+    callback request-add-tab;
+    callback request-remove-tab;
 
     VerticalLayout {
+        spacing: 3px;
         tab_bar := HorizontalLayout {
             spacing: 3px;
-            for item[index] in items: Button {
+            for item[index] in items: AppButton {
                 text: item.title;
-                clicked => {
+                tab-clicked => {
                     root.active-tab = index;
+                }
+                remove-button-clicked => {
+                    // Tab selects itself before being removed
+                    self.tab-clicked();
+                    root.request-remove-tab();
+                }
+            }
+
+            add-tab := Button {
+                text: "+";
+                width: 30px;
+                clicked => {
+                    root.request-add-tab();
                 }
             }
         }
@@ -95,8 +160,8 @@ export component AppWindow inherits Window {
     callback request-add-item();
     callback request-remove-checked-items();
     callback request-save-item(int, string);
-    callback request-add-tab();
-    callback request-remove-tab();
+    callback request-add-tab  <=> app-tabwidget.request-add-tab;
+    callback request-remove-tab  <=> app-tabwidget.request-remove-tab;
 
     VerticalLayout {
         width: 100%;
@@ -127,32 +192,6 @@ export component AppWindow inherits Window {
                  root.request-save-item(index, update);
             }
          }
-
-         Rectangle {
-            background: whitesmoke;
-            border-width: 1px;
-            border-color: black;
-            TextInput {
-                text <=> tab_input;
-                preferred-height: 20px;
-            }
-        }
-
-        HorizontalLayout {
-            Button {
-                text: "Add Tab";
-                clicked => {
-                    root.request-add-tab();
-                }
-            }
-
-            Button {
-                text: "Remove Tab";
-                clicked => {
-                    root.request-remove-tab();
-                }
-            }
-        }
 
         app_tabwidget := AppTabWidget { }
     }
